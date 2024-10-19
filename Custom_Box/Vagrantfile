@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$pre_install = <<-SCRIPT
+  echo ">>>> 미러 리포지터리를 카카오로 변경 <<<<"
+  sudo sed -i.bak 's|https://mirrors.edge.kernel.org|http://mirror.kakao.com|g' /etc/apt/sources.list
+  echo ">>>> 패키지 목록 업데이트 <<<<"
+  sudo apt-get update
+  echo ">>>> pre-install 완료 <<<<"
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu2204"
+  config.vm.box_version = "4.3.12"
+# vm.define은 VM 내의 프로비저닝 환경을 정의하는 부분이다.
+  config.vm.define "sample" do |sample|
+    sample.vm.provider "vmware_desktop" do |v|
+      v.vmx['displayname'] = "Sample"
+      v.memory = 6144 # 6GB
+      v.cpus = 3
+    end
+    sample.vm.hostname = "sample"
+    sample.vm.network "private_network", ip: "192.168.1.100"
+    sample.vm.provision "shell", inline: $pre_install
+  end
+end
