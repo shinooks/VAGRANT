@@ -1,0 +1,7 @@
+# Vagrant 관련 파일 및 디렉토리
+**/.vagrant/
+**/*.box
+
+# IntelliJ IDEA 관련 파일 및 디렉토리
+**/.idea/
+**/*.iml

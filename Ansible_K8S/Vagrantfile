@@ -1,0 +1,78 @@
+ggVagrant.configure("2") do |config|
+  config.vm.box = "swhwang/ubuntu"
+  config.vm.box_version = "1.0"
+
+  config.vm.provider "vmware_desktop" do |v|
+    v.vmx["memsize"] = "4096"
+    v.vmx["numvcpus"] = "2"
+  end
+
+
+  # Ansible 서버
+  config.vm.define "ansible" do |ansible|
+    ansible.vm.hostname = "ansible-server"
+    ansible.vm.network "private_network", ip: "192.168.56.10"
+    ansible.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y ansible
+    SHELL
+  end
+
+  # Jenkins 서버
+  config.vm.define "jenkins" do |jenkins|
+    jenkins.vm.hostname = "jenkins-server"
+    jenkins.vm.network "private_network", ip: "192.168.56.20"
+    jenkins.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y openjdk-11-jdk
+      wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | apt-key add -
+      sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+      apt-get update
+      apt-get install -y jenkins
+      systemctl enable jenkins
+      systemctl start jenkins
+    SHELL
+  end
+
+  # 쿠버네티스 마스터 노드
+  config.vm.define "k8s-master" do |master|
+    master.vm.hostname = "k8s-master"
+    master.vm.network "private_network", ip: "192.168.56.30"
+    master.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y docker.io
+      curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+      cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+      deb https://apt.kubernetes.io/ kubernetes-xenial main
+      EOF
+      apt-get update
+      apt-get install -y kubelet kubeadm kubectl
+      kubeadm init --apiserver-advertise-address=192.168.56.30 --pod-network-cidr=10.244.0.0/16
+      mkdir -p $HOME/.kube
+      cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+      chown $(id -u):$(id -g) $HOME/.kube/config
+      # Flannel 설치
+      kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+    SHELL
+  end
+
+  # 쿠버네티스 워커 노드 (2대 예시)
+  (1..2).each do |i|
+    config.vm.define "k8s-worker#{i}" do |worker|
+      worker.vm.hostname = "k8s-worker#{i}"
+      worker.vm.network "private_network", ip: "192.168.56.3#{i}"
+      worker.vm.provision "shell", inline: <<-SHELL
+        apt-get update
+        apt-get install -y docker.io
+        curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+        cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+        deb https://apt.kubernetes.io/ kubernetes-xenial main
+        EOF
+        apt-get update
+        apt-get install -y kubelet kubeadm kubectl
+        # 쿠버네티스 마스터 노드에서 kubeadm join 명령 생성 후 워커에 추가
+        kubeadm join 192.168.56.30:6443 --token <your-token> --discovery-token-ca-cert-hash <hash>
+      SHELL
+    end
+  end
+end
