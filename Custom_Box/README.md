@@ -1,6 +1,6 @@
 # Vagrant 커스텀 이미지(Box) 생성하기
 
-## 1. VMware
+## 1. VMware에서 베이스 이미지 생성
 > **VMware 설치하기**
 >
 >이전까지는 오픈 소스인 Oracle Virtual Box를 많이 이용했기 때문에 대부분의 프로비저닝 이미지(Box)가 Virtual Box로 제공되었다.<br>
@@ -84,22 +84,8 @@ Mirror address: http://mirror.kakao.com/ubuntu/
 
 ![image](https://github.com/user-attachments/assets/3dc155c8-1c55-42fb-b08a-53366ad8e585)
 
-## 2. Vagrant
-
-### 1) Vagrant 설치
-생략, [Vagrant 설치 경로](https://developer.hashicorp.com/vagrant/install?product_intent=vagrant)
-
-### 2) Vagrant VMware Plugin 설치
-
-VMware나 Docker 등 Virtual Box가 아닌 다른 프로그램을 이용할 경우 각 프로바이더에 맞는 플러그인 프로그램을 설치하고 적용해야 한다.
-
-1. [윈도우 플러그인 프로그램 설치](https://developer.hashicorp.com/vagrant/install/vmware)
-2. vagrant에 플러그인 등록
-    ```bash
-    vagrant plugin install vagrant-vmware-desktop
-    ```
-   
-### 3) Vagrant로 가상머신 프로비저닝하기
+## 2. Vagrant로 박스 테스트
+### 1) Vagrant로 가상머신 프로비저닝하기
 1. vagrant init을 이용해 VagrantFile을 생성하기
 
     vagrant init 리포지터리명/box명 --box-version 버전명<br>
