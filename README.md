@@ -1,3 +1,22 @@
+## Vagrant + Vmware 환경구성
+### 1. Vagrant 설치
+* 윈도우는 https://developer.hashicorp.com/vagrant/install에서 [실행파일로 설치]([https://developer.hashicorp.com/vagrant/install](https://releases.hashicorp.com/vagrant/2.4.1/vagrant_2.4.1_windows_amd64.msi))
+* 우분투/데비안
+    ```bash
+    wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+    sudo apt update && sudo apt install vagrant
+    ```
+* 레드햇, 페도라, 아마존리눅스, MacOS는 페이지에서 찾아보기
+### 2. Vmware 플러그인 설치
+* 윈도우는 https://developer.hashicorp.com/vagrant/install/vmware에서 [실행파일로 설치](https://releases.hashicorp.com/vagrant-vmware-utility/1.0.23/vagrant-vmware-utility_1.0.23_windows_amd64.msi)
+### 3. Vmware 플러그인 등록
+* Virtual Machine 외 다른 프로바이더를 이용할 경우 각 프로바이더에 맞는 플러그인 등록 필요
+* ```bash
+  vagrant plugin install vagrant-vmware-desktop
+  ```
+---
+   
 ## Vagrant 주요 명령어
 
 | 명령어                | 설명                                                                  |
