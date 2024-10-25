@@ -15,8 +15,48 @@
 * ```bash
   vagrant plugin install vagrant-vmware-desktop
   ```
----
-   
+### 4. `Vagrant init`으로 Vagrantfile 초기화
+* 프로젝트 폴더를 생성하고 터미널을 이용해 `Vagrant init` 명령어 입력
+* 폴더 내에 Vagrantfile이 생성됩니다. 이미 있다면 명령어 실행 X
+* Vagrantfile을 직접 생성해도 됩니다.
+### 5. Vagrantfile 전역 구성
+```ruby
+Vagrant.configure("2") do |config|
+  # 사용할 박스를 설정 (예: Ubuntu 22.04)
+  config.vm.box = "generic/ubuntu2204" # 원하는 박스 이름으로 변경 가능
+
+  # VMware Desktop을 프로바이더로 설정
+  config.vm.provider "vmware_desktop" do |v|
+    # VMware
+  end
+end
+```
+### 6. Vagrantfile 지역 구성
+* Vagrantfile에서 독립적인 설정을 하려면 `config.vm.define`으로 프로비저닝 환경을 정의합니다.
+```ruby
+Vagrant.configure("2") do |config|
+  # 첫 번째 VM 설정 (예: 웹 서버)
+  config.vm.define "web" do |web|
+    web.vm.box = "generic/ubuntu2204"
+    web.vm.hostname = "web-server"
+    web.vm.provider "vmware_desktop"
+  end
+
+  # 두 번째 VM 설정 (예: 데이터베이스 서버)
+  config.vm.define "db" do |db|
+    db.vm.box = "generic/ubuntu2204"
+    db.vm.hostname = "db-server"
+    db.vm.provider "vmware_desktop"
+  end
+end
+```
+* VM을 프로비저닝하는 `vagrant up`을 입력하면 모든 define이 프로비저닝 됩니다.
+### 7. Vagrantfile 부분 수정&로드
+* 이미 다른 VM이 동작 중인 상태에서 새로운 VM을 프로비저닝 하려면 'vagrant up db` 와 같이 이름으로 호출합니다.
+* 이미 동작 중인 특정 VM을 업데이트하기 위해서는 'vagrant provision db'와 같이 이름으로 호출합니다.
+* 기본적으로 `vagrant provision`은 이미 정의된 프로비저닝만 다시 수행합니다.
+* 새롭게 추가했다면 `vagrant reload --provision`(VM 재시작) 혹은 `vagrant provision <VM 이름(생략가능)> --provision-with <프로비저닝 이름>` 과 같이 지정해서 실행해야 합니다.
+
 ## Vagrant 주요 명령어
 
 | 명령어                | 설명                                                                  |
