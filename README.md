@@ -51,12 +51,16 @@ Vagrant.configure("2") do |config|
 end
 ```
 * VM을 프로비저닝하는 `vagrant up`을 입력하면 모든 define이 프로비저닝 됩니다.
-### 7. Vagrantfile 부분 수정&로드
+### 7. Vagrantfile 실행 부분 수정&로드
 * 이미 다른 VM이 동작 중인 상태에서 새로운 VM을 프로비저닝 하려면 'vagrant up db` 와 같이 이름으로 호출합니다.
 * 이미 동작 중인 특정 VM을 업데이트하기 위해서는 'vagrant provision db'와 같이 이름으로 호출합니다.
-* 기본적으로 `vagrant provision`은 이미 정의된 프로비저닝만 다시 수행합니다.
-* 새롭게 추가했다면 `vagrant reload --provision`(VM 재시작) 혹은 `vagrant provision <VM 이름(생략가능)> --provision-with <프로비저닝 이름>` 과 같이 지정해서 실행해야 합니다.
 
+### 8. Vagrant 부분 수정 & 추가
+* 기본적으로 `vagrant provision`은 이미 정의된 프로비저닝만 다시 수행합니다.
+* 새롭게 추가했다면 `vagrant reload --provision`(VM 재시작 -> VM 꺼졌다 켜짐)
+* 또는 `vagrant provision <VM 이름(생략가능)> --provision-with <프로비저닝 이름>` 과 같이 지정해서 실행해야 합니다. (VM 중단 없이 명령 실행)
+* 아래와 같이 프로비저닝 명령 단위로 이름을 부여해야 합니다.
+* * `ansible.vm.provision "shell", path: "install_ansible.sh" name: "install_ansible*`
 ## Vagrant 주요 명령어
 
 | 명령어                | 설명                                                                  |
