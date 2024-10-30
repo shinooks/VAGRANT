@@ -1,0 +1,38 @@
+---
+- name: Create authority between server and nodes
+  # 명령의 대상은 hosts 들이다. -> 여기서는 등록된 노드들
+  hosts: nodes
+  # local은 로컬 환경에서 task의 명령을 실행하라는 뜻, ssh로하면 노드에 SSH 접속 후 실행
+  connection: local 
+  # ansible은 기본적으로 task를 병렬 실행
+  # serial: 1은 하나씩 task를 실행하라는 의미
+  serial: 1
+  gather_facts: no
+  vars:
+    ansible_password: vagrant
+
+  tasks:
+    - name: ssh-keyscan for known_hosts file 
+      command: /usr/bin/ssh-keyscan -t ecdsa {{ ansible_host }}
+      register: keyscan
+
+    - name: input key
+      lineinfile:      
+        path: ~/.ssh/known_hosts
+        line: "{{ item }}"
+        create: yes     
+      with_items:
+        - "{{ keyscan.stdout_lines }}"
+    
+    - name: ssh-keygen for authorized_keys file
+      command: "ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N ''"
+      args:
+        creates: "~/.ssh/id_rsa"
+      run_once: true
+
+    - name: input key for each node
+      connection: ssh
+      authorized_key:
+        user: vagrant
+        state: present
+        key: "{{ lookup('file', '/home/vagrant/.ssh/id_rsa.pub') }}"

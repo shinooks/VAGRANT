@@ -10,7 +10,8 @@ Vagrant.configure("2") do |config|
 
   # 패키지 설치는 초기 한번만 수행하는 옵션 run
   config.vm.provision "shell", path: "pre_install.sh", name: "package_update", run: "once"
-
+  
+  
   config.vm.provider "vmware_desktop" do |vmware|
       vmware.gui = true  # GUI를 활성화하면 VMware 앱에서 서버 만들어지는 것이 보임
       vmware.memory = "2048"  # 2GB 메모리 할당
@@ -20,18 +21,6 @@ Vagrant.configure("2") do |config|
   ################
   # VM 개별 설정  #
   ################
-
-  # Ansible 서버
-  config.vm.define "ansible-server" do |ansible|
-    ansible.vm.hostname = "ansible-server"
-    ansible.vm.network "public_network", ip: "192.168.56.10"
-    # Ansible 설치 및 확인
-    ansible.vm.provision "shell", path: "install_ansible.sh", name: "install_ansible", run: "once"
-
-    # 동일 경로의 Ansible 플레이북 파일을 서버 내부로 이동해 실행
-    ansible.vm.provision "file", source: "ansible_env_ready.yml", destination: "ansible_env_ready.yml"
-    ansible.vm.provision "shell", inline: "ansible-playbook ansible_env_ready.yml"
-  end
 
   # Kubernetes 마스터 노드
   config.vm.define "k8s-master" do |master|
@@ -50,5 +39,23 @@ Vagrant.configure("2") do |config|
       worker.vm.hostname = "k8s-worker#{i}"
       worker.vm.network "public_network", ip: "192.168.56.1#{i+1}"
     end
+  end
+
+  # Ansible 서버는 모든 노드의 정보를 알고 있어야 하기 때문에 생성 후 플레이북 실행
+  config.vm.define "ansible-server" do |ansible|
+    ansible.vm.hostname = "ansible-server"
+    ansible.vm.network "public_network", ip: "192.168.56.10"
+    
+    # Ansible 설치 스크립트 실행
+    ansible.vm.provision "shell", path: "ansible_install.sh", name: "ansible_update", run: "always"
+    
+    # 동일 경로의 Ansible 플레이북 파일을 서버 내부로 이동해 실행
+    # file은 이미 파일이 존재하면 덮어쓰지 못한다는 단점 있음
+    ansible.vm.provision "file", source: "ansible_env_ready.yml", destination: "ansible_env_ready.yml"
+    ansible.vm.provision "shell", inline: "ansible-playbook ansible_env_ready.yml"
+
+    # # 노드들과 통신을 위한 인증처리 야믈파일
+    # ansible.vm.provision "file", source: "auto_pass.yml", destination: "auto_pass.yml"
+    # ansible.vm.provision "shell", inline: "ansible-playbook auto_pass.yml", privileged: false
   end
 end
