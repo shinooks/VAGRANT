@@ -1,3 +1,8 @@
+* 참고자료 :
+* https://jbground.tistory.com/107
+* https://www.inflearn.com/community/questions/888659/%EC%BF%A0%EB%B2%84%EB%84%A4%ED%8B%B0%EC%8A%A4-%EC%84%A4%EC%B9%98%ED%95%A0-%EB%95%8C-%EC%97%90%EB%9F%AC%EB%82%A9%EB%8B%88%EB%8B%A4-%ED%95%B4%EA%B2%B0-%EB%B0%A9%EB%B2%95-%EA%B3%B5%EC%9C%A0%ED%95%A9%EB%8B%88%EB%8B%A4-23-05-30-%EA%B8%B0%EC%A4%80?srsltid=AfmBOoq-ni2L_ZSWJdHFat_4PPpRPNOTFEeISgs9iaVLh3TL5KpEcj7G
+* https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
+* https://littlemobs.com/blog/kubernetes-package-repository-deprecation/
 #1단계: 각 서버 준비 - 루트 계정으로 진행
 
 종속성 업데이트 및 설치
@@ -52,6 +57,7 @@ containerd config default | sudo tee /etc/containerd/config.toml
 systemctl restart containerd
 systemctl enable containerd
 ```
+---
 #8단계: 패키지 설치
 > # 2. 구글 클라우드의 공개 사이닝 키를 다운로드 한다.
 > curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
@@ -64,7 +70,7 @@ systemctl enable containerd
 > ```sudo apt-get update
 > sudo apt-get install -y kubelet kubeadm kubectl
 > sudo apt-mark hold kubelet kubeadm kubectl```
-
+---
 #8단계 : kubeadm 소스코드 설치 (소스코드 설치 방식)
 > apt를 이용해 설치를 하다보니 kubeadm과 kubelet의 패키지 버전으로 인한 호환성 문제가 발견되었다.
 > 버전 통합을 위해 소스코드 설치 방식을 사용하였다.
