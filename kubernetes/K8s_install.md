@@ -144,7 +144,7 @@ sudo systemctl kubeadm init
        => Systemd가 Cgroup을 이용할 수 있도록 true로 설정, 아래 내용이 포함
        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
           SystemdCgroup = true
-       containerRuntimeEndpoint: "unix:///run/containerd/containerd.sock"
+       containerRuntimeEndpoint: "unix:///var/run/containerd/containerd.sock"
    sudo systemctl restart containerd
    sudo systemctl restart kubelet
    sudo systemctl status kubelet

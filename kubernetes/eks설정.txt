@@ -1,0 +1,89 @@
+curl "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname)_amd64.tar.gz" --silent --location | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+export EKSA_RELEASE="0.9.1" OS="$(uname -s | tr A-Z a-z)" RELEASE_NUMBER=12
+curl "https://anywhere-assets.eks.amazonaws.com/releases/eks-a/${RELEASE_NUMBER}/artifacts/eks-a/v${EKSA_RELEASE}/${OS}/amd64/eksctl-anywhere-v${EKSA_RELEASE}-${OS}-amd64.tar.gz" --silent --location | tar xz ./eksctl-anywhere
+sudo mv ./eksctl-anywhere /usr/local/bin/
+
+# 리눅스 Cgroup 버전 v2->v1
+%sudo <editor> /etc/default/grub
+GRUB_CMDLINE_LINUX="systemd.unified_cgroup_hierarchy=0"
+sudo update-grub
+sudo reboot now
+
+# 클러스터 구성 정의
+CLUSTER_NAME=dev-cluster
+eksctl anywhere generate clusterconfig $CLUSTER_NAME --provider docker > $CLUSTER_NAME.yaml
+
+# 클러스터 생성
+eksctl anywhere create cluster -f $CLUSTER_NAME.yaml
+
+# 클러스터 액세스
+export KUBECONFIG=${PWD}/${CLUSTER_NAME}/${CLUSTER_NAME}-eks-a-cluster.kubeconfig
+kubectl get ns
+
+# 어플리키에션 배포 테스트
+kubectl apply -f "https://anywhere.eks.amazonaws.com/manifests/hello-eks-a.yaml"
+
+
+
+----------------------------------
+9초 동안 Thought
+
+안녕하세요!
+
+Docker를 사용하면서 bridge-nf-call-iptables is disabled라는 경고 메시지를 보셨군요. 또한, UFW (Uncomplicated Firewall)를 사용 중이라면 iptables가 필요한지에 대해 의문을 가지신 것 같습니다. 이 질문에 대해 자세히 설명드리겠습니다.
+
+1. 경고 메시지의 의미
+먼저, 경고 메시지인 bridge-nf-call-iptables is disabled와 bridge-nf-call-ip6tables is disabled는 Docker의 브리지 네트워크를 통해 송수신되는 패킷이 호스트의 iptables 규칙에 의해 필터링되지 않는다는 의미입니다. 이는 보안상 권장되지 않는 설정으로, 네트워크 트래픽을 적절히 제어하기 위해서는 이 옵션들을 활성화하는 것이 좋습니다.
+
+2. UFW와 iptables의 관계
+UFW는 iptables의 복잡한 규칙을 간편하게 관리할 수 있도록 도와주는 프론트엔드 도구입니다. 즉, UFW를 사용하면 실제로는 iptables가 백그라운드에서 동작하며, UFW 명령어를 통해 iptables 규칙을 설정하고 관리하게 됩니다. 따라서 UFW를 사용한다고 해서 iptables가 필요 없게 되는 것은 아닙니다. 오히려, UFW는 iptables의 설정을 간소화한 형태로 동작합니다.
+
+3. bridge-nf-call-iptables 설정과 UFW의 관계
+Docker는 네트워크 트래픽을 관리하기 위해 iptables를 직접 사용합니다. bridge-nf-call-iptables와 bridge-nf-call-ip6tables는 Docker의 브리지 네트워크 트래픽이 호스트의 iptables 규칙을 통해 필터링되도록 설정하는 옵션입니다. 이 설정이 비활성화되어 있으면 Docker 네트워크 트래픽이 방화벽 규칙의 영향을 받지 않게 되어 보안에 취약할 수 있습니다.
+
+UFW를 사용하는 경우에도 이 설정은 중요합니다. 왜냐하면 UFW는 iptables의 규칙을 관리하지만, Docker가 생성하는 자체 규칙과 상호작용할 수 있기 때문입니다. 따라서 Docker의 브리지 네트워크 트래픽을 제대로 필터링하려면 bridge-nf-call-iptables와 bridge-nf-call-ip6tables를 활성화해야 합니다.
+
+4. 설정 방법
+다음은 bridge-nf-call-iptables와 bridge-nf-call-ip6tables를 활성화하는 방법입니다:
+
+sysctl 설정 변경
+
+/etc/sysctl.conf 파일을 열어 다음 내용을 추가하거나 수정합니다:
+
+bash
+코드 복사
+sudo nano /etc/sysctl.conf
+파일에 다음 줄을 추가합니다:
+
+bash
+코드 복사
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+설정 적용
+
+변경 사항을 적용하기 위해 다음 명령어를 실행합니다:
+
+bash
+코드 복사
+sudo sysctl -p
+UFW와 Docker의 호환성 조정
+
+Docker는 자체적으로 iptables 규칙을 관리하기 때문에, UFW와의 충돌을 방지하기 위해 몇 가지 추가 설정이 필요할 수 있습니다.
+
+UFW의 기본 정책 확인 및 수정
+
+UFW의 기본 정책이 Docker의 규칙을 방해하지 않도록 설정합니다. 예를 들어, 기본적으로 모든 포트를 차단하고 필요한 포트만 허용하는 정책을 유지할 수 있습니다.
+
+필요한 포트 허용
+
+Docker 컨테이너에서 사용하는 포트를 UFW를 통해 허용합니다. 예를 들어, 웹 서버를 운영 중이라면 80번과 443번 포트를 허용해야 합니다:
+
+bash
+코드 복사
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+Docker의 iptables 사용 제한 (선택 사항)
+
+Docker가 iptables를 직접 조작하지 않도록 설정할 수 있지만, 이는 고급 설정이며 권장되지 않을 수 있습니다. 기본적으로 Docker의 iptables 관리를 허용하는 것이 일반적입니다.
+

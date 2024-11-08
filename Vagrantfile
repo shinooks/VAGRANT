@@ -6,12 +6,11 @@ Vagrant.configure("2") do |config|  # config는 모든 머신에 적용되는 �
   ################
   
   # 기본 박스 설정 - 모든 머신에서 공통적으로 사용할 박스
-  config.vm.box = "swhwang/ubuntu"  # 사용할 박스 지정
-  config.vm.box_version = "1.0"  # 사용할 박스 버전 지정 (생략 시 최신 버전 사용)
+  config.vm.box = "generic/ubuntu2204" # 사용할 박스 지정
+  config.vm.box_version = "4.3.12" # 사용할 박스 버전 지정 (생략 시 최신 버전 사용)
   
-  # VM 네트워크 전역 설정: DHCP를 이용한 IP 할당
-  # 개별 머신에서 IP 설정을 오버라이드할 수 있습니다.
-  config.vm.network "private_network", type: "dhcp"
+  # VM 네트워크 전역 설정: DHCP를 이용한 IP 할당 -> 동일한 인터페이스 사용
+  config.vm.network "private_network", type: "dhcp" # 개별 머신에서 IP 설정을 오버라이드할 수 있습니다.
   
   # VMware Provider 전역 자원 설정 - 모든 머신에게 적용될 기본 리소스 값 지정
   # 각 머신에서 개별적으로 오버라이드할 수 있습니다.
